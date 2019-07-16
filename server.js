@@ -7,6 +7,10 @@ const multer = require("multer");
 const consolidate = require("consolidate");
 const mysql = require("mysql");
 
+// var db=mysql.createConnection({host:"localhost",port:"8080",user:"root",password:"zhangxin",database:"blog"});
+//连接池
+const db = mysql.createPool({host:"localhost",port:"3307",user:"root",password:"123456",database:"blog"});
+
 var server = express();
 server.listen("8080");
 
@@ -25,13 +29,21 @@ server.use(multer({dest:"./www/upload"}).any());
 //输出什么东西
 server.set("view engine","html");
 //模板文件放在哪
-server.set("views","./views");
+server.set("views","./template");
 //使用哪种模板引擎
 server.engine("html",consolidate.ejs);
 
 //接收用户请求
-server.get("/",function(req,res){
-    res.send("111111");
+server.get("/",(req,res)=>{
+    db.query("SELECT * FROM `banner_table`;",(err,data)=>{
+        if(err){
+            console.log(err);
+            res.status(500).send("网络错误！").end();
+        }else{
+            console.log(data);
+            res.render("index.ejs",{banners:data});
+        }
+    })
 })
 
 //5.static数据
