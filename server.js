@@ -64,23 +64,50 @@ server.get("/",(req,res)=>{
 })
 server.get("/article",(req,res)=>{
     var artId = req.query.id;
+    var act = req.query.act;
     if(artId){
-        db.query("SELECT * FROM `article_table` WHERE ID="+artId,(err,data)=>{
-            if(err){
-                res.status(500).send("database error！");
-            }else{
-                if(data.length==0){
-                    res.status(404).send("请求的文章不存在！").end();
+        if(act == "like"){
+            //增加一个赞
+            db.query(`UPDATE article_table SET n_like=n_like+1 WHERE ID=${artId}`,(err,data)=>{
+                if(err){
+                    res.status(500).send("database error!").end();
                 }else{
-                    var article_data = data[0];
-                    article_data.sDate = common.time2date(article_data.post_time);
-                    article_data.sContent = article_data.content.replace(/^/gm,"<p>").replace(/$/gm,"</p>");
-                    console.log(article_data);
-                    res.render("conText.ejs",{article:article_data});
+                    db.query("SELECT * FROM `article_table` WHERE ID="+artId,(err,data)=>{
+                        if(err){
+                            res.status(500).send("database error！").end();
+                        }else{
+                            if(data.length==0){
+                                res.status(404).send("请求的文章不存在！").end();
+                            }else{
+                                var article_data = data[0];
+                                article_data.sDate = common.time2date(article_data.post_time);
+                                article_data.sContent = article_data.content.replace(/^/gm,"<p>").replace(/$/gm,"</p>");
+                                console.log(article_data);
+                                res.render("conText.ejs",{article:article_data});
+                            }
+                        }
+                    }) 
                 }
-            }
-        })
+            })
+        }else{
+            db.query("SELECT * FROM `article_table` WHERE ID="+artId,(err,data)=>{
+                if(err){
+                    res.status(500).send("database error！").end();
+                }else{
+                    if(data.length==0){
+                        res.status(404).send("请求的文章不存在！").end();
+                    }else{
+                        var article_data = data[0];
+                        article_data.sDate = common.time2date(article_data.post_time);
+                        article_data.sContent = article_data.content.replace(/^/gm,"<p>").replace(/$/gm,"</p>");
+                        console.log(article_data);
+                        res.render("conText.ejs",{article:article_data});
+                    }
+                }
+            })
+        }
     }else{
+        res.status(404).send("请求的文章不存在！").end();
     }
     
 })
